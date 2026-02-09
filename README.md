@@ -28,7 +28,7 @@ Input is a JSON file, each entry like:
 ### Model Prediction
 A text file, each line:
 ```
-<id>    <predicted_text>
+<key>    <predicted_text>
 ```
 Example:
 ```
