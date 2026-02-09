@@ -1,0 +1,5 @@
+{"task": "ser", "key": "utt_001", "target": "happy", "text": "I am so glad to see you!"}
+{"task": "ser", "key": "utt_002", "target": "sad", "text": "I miss my friend."}
+{"task": "ser", "key": "utt_003", "target": "angry", "text": "Why did you do that?"}
+{"task": "ser", "key": "utt_004", "target": "neutral", "text": "The meeting is at 3pm."}
+{"task": "ser", "key": "utt_005", "target": "scared", "text": "I am worried about the results."}

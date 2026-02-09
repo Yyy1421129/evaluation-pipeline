@@ -1,0 +1,5 @@
+utt_001 happy
+utt_002 sad
+utt_003 angry
+utt_004 0
+utt_005 scared

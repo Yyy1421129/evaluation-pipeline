@@ -1,0 +1,5 @@
+pause_perception_a0937fe0-6ba7-4797-b698-8bad74a19b91	The answer is C
+pause_perception_b1234567-aaaa-bbbb-cccc-123456789abc	After careful listening, I choose D
+pause_perception_c9876543-cccc-dddd-eeee-987654321fed	I think the answer is A
+pause_perception_d1111111-aaaa-bbbb-cccc-123456789abc	B   
+pause_perception_e2222222-cccc-dddd-eeee-987654321fed	running   

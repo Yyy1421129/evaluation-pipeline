@@ -1,0 +1,3 @@
+en-001-0001    The weather is good today.
+en-001-0002    She went to the market in the morning.
+en-001-0003    Can you help me do my homework?

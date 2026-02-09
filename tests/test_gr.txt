@@ -1,0 +1,5 @@
+gr1 male
+gr2 1
+gr3 M
+gr4 female
+gr5 1

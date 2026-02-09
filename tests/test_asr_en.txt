@@ -1,0 +1,5 @@
+en1    He finished first in the race
+en2    The price is twelve dollars and fifty cents
+en3    He was born in the nineteen nineties
+en4    The temperature is minus five
+en5    He ran three meters

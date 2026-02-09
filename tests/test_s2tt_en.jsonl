@@ -1,0 +1,3 @@
+{"key": "en-001-0001", "task": "S2TT", "target": "The weather is nice today.", "path": "/aistor/sjtu/hpc_stor01/home/yangyi/data/s2tt/test/en-001-0001.wav"}
+{"key": "en-001-0002", "task": "S2TT", "target": "She went to the market early in the morning.", "path": "/aistor/sjtu/hpc_stor01/home/yangyi/data/s2tt/test/en-001-0002.wav"}
+{"key": "en-001-0003", "task": "S2TT", "target": "Can you help me with my homework?", "path": "/aistor/sjtu/hpc_stor01/home/yangyi/data/s2tt/test/en-001-0003.wav"}
