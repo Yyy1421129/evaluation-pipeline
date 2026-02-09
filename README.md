@@ -14,7 +14,7 @@ This evaluation system is designed to assess multiple speech-related tasks, incl
 
 ## Input Format
 
-### Ground Truth (GT)
+### Ground Truth (GT) (ASR, SER, GR, S2TT, SLU)
 Input is a JSON file, each entry like:
 ```json
 {
@@ -34,6 +34,7 @@ Example:
 ```
 10226_10111_000000    after his nap timothy lazily stretched first one gray velvet foot then another strolled indolently to his plate turning over the food carefully selecting choice bits nosing out that which he scorned upon the clean hearth
 ```
+For SD tasks, input format should be .rttm. For SA-ASR tasks, input format should be .stm
 
 ## Task Requirements
 
