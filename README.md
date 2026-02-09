@@ -204,4 +204,56 @@ session1 1 spk2 5.00 7.00 see you later
 - Add new task modules by following the input/output conventions.
 - Metrics and evaluation logic should be encapsulated per task.
 
+### How to Extend (Add a New Task)
+
+1. **Create your evaluation logic**  
+   Add a new function or branch in `evaluation/evaluator.py` for your task, following the style of existing tasks.
+
+2. **Register your task**  
+   Add your task to the `TASK_MAP` in `run_evaluation.py`, for example:
+   ```python
+   TASK_MAP = {
+       # ...
+       "mytask": "mytask_eval",
+   }
+   ```
+
+3. **Document your task**  
+   Add a description of your task’s input/output format and usage to the README.
+
+4. **(Optional) Add test data**  
+   Place sample ground truth and prediction files for your task in the `tests/` directory.
+
+#### Example: Add a new task "MyTask"
+
+In `evaluation/evaluator.py`, add:
+```python
+elif task_name == "mytask_eval":
+    ref_labels = []
+    hyp_labels = []
+    with open(data["ref_file"], 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split('\t', 1)
+            if len(parts) == 2:
+                key, label = parts
+                ref_labels.append(label.strip().lower())
+    with open(data["hyp_file"], 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split('\t', 1)
+            if len(parts) == 2:
+                key, label = parts
+                hyp_labels.append(label.strip().lower())
+    correct = sum(1 for r, h in zip(ref_labels, hyp_labels) if r == h)
+    acc = correct / len(ref_labels) if ref_labels else 0
+    print(f"[MYTASK] Accuracy: {acc:.4f} ({correct}/{len(ref_labels)})")
+    return acc
+```
+
+In `run_evaluation.py`, add to `TASK_MAP`:
+```python
+"mytask": "mytask_eval",
+```
+
+By following these steps, anyone can easily contribute a new task module to this evaluation framework.
+
 ---
