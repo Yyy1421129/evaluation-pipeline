@@ -50,7 +50,7 @@ For SD tasks, input format should be .rttm. For SA-ASR tasks, input format shoul
 
 <details>
 
-<summary>ASR part(Examples): Matrix: wenet wer/cer</summary>
+<summary>ASR part(Examples): Matrix: wenet wer/cer mer</summary>
 
 python run_evaluation.py <gt_json> <pred_txt> —language zh(Optional)
 
@@ -71,7 +71,8 @@ Normalized result: The price is twelve dollars fifty cents
   "path": /fake_path/audio5
 }
 ```
-Normalized result: 今天是二千零二十三年十月二十七日
+Normalized result: 今天是二千零二十三年十月二十七日  
+For codeswitch ASR tasks, language param should be ‘cs’.
 
 </details>
 
@@ -80,7 +81,8 @@ Normalized result: 今天是二千零二十三年十月二十七日
 <summary>SER part(Examples): Matrix: acc</summary>
 
 python run_evaluation.py <gt_json> <pred_txt> —ser_mapping {}(Optional)  
-Default ser_mapping : {"neu": 0, "hap": 1, "ang": 2, "sad": 3} (IEMOCAP)
+Default ser_mapping : {"neu": 0, "hap": 1, "ang": 2, "sad": 3} (IEMOCAP)  
+Returns: MER(mixture error rate) WER CER (Calculate separately in Chinese and English)
 
 ```json
 {
