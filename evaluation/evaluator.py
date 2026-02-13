@@ -2,6 +2,57 @@ import os
 from preprocess import Preprocessor
 from tasks.asr_wer import compute_wer
 from clean_marks import strip_all_punct
+import re
+import unicodedata
+
+def _is_chinese_char(ch):
+    return '\u4e00' <= ch <= '\u9fff'
+
+def _strip_punct(text):
+    keep = set('-./%')
+    return ''.join(
+        ch for ch in text
+        if not (unicodedata.category(ch).startswith('P') and ch not in keep)
+    )
+
+def calc_rate(result_dict):
+    n = result_dict['all']
+    s = result_dict['sub']
+    d = result_dict['del']
+    i = result_dict['ins']
+    if n == 0:
+        return 0.0
+    return (s + d + i) / n
+
+def split_tokens(tokens):
+    zh = [t for t in tokens if all(_is_chinese_char(c) for c in t)]
+    en = [t for t in tokens if not any(_is_chinese_char(c) for c in t)]
+    return zh, en
+
+def tokenize_codeswitch(text, proc1, proc2):
+    text = _strip_punct(text)
+    tokens = []
+    buff = []
+    for ch in text:
+        if _is_chinese_char(ch):
+            if buff:
+                en_token = proc1.normalize(''.join(buff))
+                tokens.append(en_token.upper())
+                buff = []
+            zh_token = proc2.normalize(ch)
+            tokens.append(zh_token)
+        elif ch.isalnum():
+            buff.append(ch)
+        else:
+            if buff:
+                en_token = proc1.normalize(''.join(buff))
+                tokens.append(en_token.upper())
+                buff = []
+    if buff:
+        en_token = proc1.normalize(''.join(buff))
+        tokens.append(en_token.upper())
+    return tokens
+
 class Evaluator:
     def __init__(self, config, language="en", ser_mapping=None, gr_mapping=None):
         self.config = config
@@ -31,6 +82,74 @@ class Evaluator:
         return synonyms.get(label, label)
     
     def run(self, task_name, data, language="en"):
+        if task_name == "asr_wer" and language == "cs":
+            ref_norm_file = "tmp_ref_norm.txt"
+            hyp_norm_file = "tmp_hyp_norm.txt"
+            ref_lines = []
+            hyp_lines = []
+            ref_zh_lines = []
+            ref_en_lines = []
+            hyp_zh_lines = []
+            hyp_en_lines = []
+            proc1 = Preprocessor(lang='en')
+            proc2 = Preprocessor(lang='zh')
+            with open(data["ref_file"], 'r', encoding='utf-8') as f:
+                for line in f:
+                    parts = line.strip().split('\t', 1)
+                    if len(parts) == 2:
+                        key, text = parts
+                        tokens = tokenize_codeswitch(text, proc1, proc2)
+                        ref_lines.append(f"{key}\t{' '.join(tokens)}")
+                        zh, en = split_tokens(tokens)
+                        ref_zh_lines.append(f"{key}\t{' '.join(zh)}")
+                        ref_en_lines.append(f"{key}\t{' '.join(en)}")
+            with open(data["hyp_file"], 'r', encoding='utf-8') as f:
+                for line in f:
+                    parts = line.strip().split('\t', 1)
+                    if len(parts) == 2:
+                        key, text = parts
+                        tokens = tokenize_codeswitch(text, proc1, proc2)
+                        hyp_lines.append(f"{key}\t{' '.join(tokens)}")
+                        zh, en = split_tokens(tokens)
+                        hyp_zh_lines.append(f"{key}\t{' '.join(zh)}")
+                        hyp_en_lines.append(f"{key}\t{' '.join(en)}")
+            with open(ref_norm_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(ref_lines) + '\n')
+            with open(hyp_norm_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(hyp_lines) + '\n')
+            print("Computing MER for code-switching ASR...")
+            mer_result = compute_wer(ref_norm_file, hyp_norm_file)
+
+            # CER
+            ref_zh_file = "tmp_ref_zh.txt"
+            hyp_zh_file = "tmp_hyp_zh.txt"
+            with open(ref_zh_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(ref_zh_lines) + '\n')
+            with open(hyp_zh_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(hyp_zh_lines) + '\n')
+            print("Computing CER for Chinese part...")
+            cer_result = compute_wer(ref_zh_file, hyp_zh_file)
+
+            # WER
+            ref_en_file = "tmp_ref_en.txt"
+            hyp_en_file = "tmp_hyp_en.txt"
+            with open(ref_en_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(ref_en_lines) + '\n')
+            with open(hyp_en_file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(hyp_en_lines) + '\n')
+            print("Computing WER for English part...")
+            wer_result = compute_wer(ref_en_file, hyp_en_file)
+
+            mer_score = calc_rate(mer_result)
+            cer_score = calc_rate(cer_result)
+            wer_score = calc_rate(wer_result)
+
+            print(f"MER: {mer_score * 100:.2f}%")
+            print(f"Chinese CER: {cer_score * 100:.2f}%")
+            print(f"English WER: {wer_score * 100:.2f}%")
+
+            return mer_score, wer_score, cer_score
+
         if task_name == "asr_wer":
             ref_norm_file = "tmp_ref_norm.txt"
             hyp_norm_file = "tmp_hyp_norm.txt"

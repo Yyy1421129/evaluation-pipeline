@@ -1,0 +1,5 @@
+cs2    这家店的coffee味道挺不错
+cs3    她想买一个new phone
+cs4    请把report发给我谢谢
+cs5    他在上海住了three years
+cs6    今天temperature是负五 degree
