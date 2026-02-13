@@ -148,6 +148,13 @@ class Evaluator:
             print(f"Chinese CER: {cer_score * 100:.2f}%")
             print(f"English WER: {wer_score * 100:.2f}%")
 
+            os.remove(ref_norm_file)
+            os.remove(hyp_norm_file)
+            os.remove(ref_zh_file)
+            os.remove(hyp_zh_file)
+            os.remove(ref_en_file)
+            os.remove(hyp_en_file)
+
             return mer_score, wer_score, cer_score
 
         if task_name == "asr_wer":
