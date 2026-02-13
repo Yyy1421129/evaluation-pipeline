@@ -72,7 +72,8 @@ Normalized result: The price is twelve dollars fifty cents
 }
 ```
 Normalized result: 今天是二千零二十三年十月二十七日  
-For codeswitch ASR tasks, language param should be ‘cs’.
+For codeswitch ASR tasks, language param should be ‘cs’.  
+Returns: MER(mixture error rate) WER CER (Calculate separately in Chinese and English)
 
 </details>
 
@@ -82,7 +83,6 @@ For codeswitch ASR tasks, language param should be ‘cs’.
 
 python run_evaluation.py <gt_json> <pred_txt> —ser_mapping {}(Optional)  
 Default ser_mapping : {"neu": 0, "hap": 1, "ang": 2, "sad": 3} (IEMOCAP)  
-Returns: MER(mixture error rate) WER CER (Calculate separately in Chinese and English)
 
 ```json
 {
