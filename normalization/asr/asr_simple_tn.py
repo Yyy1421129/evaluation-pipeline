@@ -72,28 +72,65 @@ def tn_replace(text, key, value):
     return text
 
 def preprocess_zh_text(text):
-    # 0. Decomposed Units (NFKC artifacts): ℃ -> °C, ㎡ -> m2
+    # 0. 归一化不规范的中文数字表达（如"一零"→"十"，"一五"→"十五"）
+    # 这处理的是逐位读法，如10读作"一零"，15读作"一五"
+    def normalize_chinese_digits(match):
+        digit_str = match.group(0)
+        # 将中文数字转换为阿拉伯数字，再转回规范的中文数字
+        digit_map = {'零': '0', '一': '1', '二': '2', '三': '3', '四': '4', 
+                   '五': '5', '六': '6', '七': '7', '八': '8', '九': '9'}
+        try:
+            arabic_num = ''.join([digit_map.get(ch, ch) for ch in digit_str])
+            num = int(arabic_num)
+            if 10 <= num <= 99:
+                return num2words_std(num, lang='zh_CN')
+            else:
+                return digit_str
+        except:
+            return digit_str
+    
+    # 匹配中文数字的逐位读法（如"一零"、"一五"、"二零"等）
+    # 只匹配2位中文数字，避免匹配更长或更短的
+    text = re.sub(r'([一二三四五六七八九零])([一二三四五六七八九零])', normalize_chinese_digits, text)
+    
+    # 1. 阿拉伯数字转中文数字（处理时间、年龄等场景）
+    def arabic_to_chinese_num(match):
+        num_str = match.group(0)
+        try:
+            num = int(num_str)
+            # 对于小于100的数字，转换为中文数字
+            if num < 100:
+                return num2words_std(num, lang='zh_CN')
+            else:
+                return num_str  # 大数字保持阿拉伯数字
+        except:
+            return num_str
+    
+    # 匹配独立的数字（避免匹配日期中的数字）
+    text = re.sub(r'(?<!\d)(\d{1,2})(?!\d)', arabic_to_chinese_num, text)
+    
+    # 2. Decomposed Units (NFKC artifacts): ℃ -> °C, ㎡ -> m2
     text = re.sub(r'°\s*C', '摄氏度', text)
     text = re.sub(r'(\d+(?:\.\d+)?)\s*m2(?![a-zA-Z0-9])', r'\1平方米', text)
     text = re.sub(r'(\d+(?:\.\d+)?)\s*m3(?![a-zA-Z0-9])', r'\1立方米', text)
 
-    # 1. Dates: 2023-10-27 or 2023/10/27 -> 2023年10月27日
+    # 3. Dates: 2023-10-27 or 2023/10/27 -> 2023年10月27日
     text = re.sub(r'(\d{4})\s*[-/]\s*(\d{1,2})\s*[-/]\s*(\d{1,2})', r'\1年\2月\3日', text)
     
-    # 2. Fractions: 1/2 -> 2分之1
+    # 4. Fractions: 1/2 -> 2分之1
     # Lookbehind/ahead to avoid matching parts of dates or other patterns if necessary
     # Assuming simple 1/2 format for fractions in ASR output
     text = re.sub(r'(?<!\d[/-])(\d+)\s*/\s*(\d+)(?![/-]\d)', r'\2分之\1', text)
     
-    # 3. Percent: 50% -> 百分之50
+    # 5. Percent: 50% -> 百分之50
     text = re.sub(r'(\d+(?:\.\d+)?)\s*%', r'百分之\1', text)
     
-    # 4. Negative: -5 -> 负5
+    # 6. Negative: -5 -> 负5
     # Avoid matching ranges like 5-10 (digit-digit) or models iPhone-15 (letter-digit)
     # But allow "在-5" (Chinese-digit)
     text = re.sub(r'(?<![0-9a-zA-Z])\s*-\s*(\d+)', r'负\1', text)
     
-    # 5. Units (Attached): 3m, 75kg
+    # 7. Units (Attached): 3m, 75kg
     unit_map = {
         'kg': '千克', 'km': '千米', 'cm': '厘米', 'mm': '毫米',
         'ml': '毫升', 'l': '升', 'm': '米'
