@@ -128,7 +128,7 @@ class Evaluator:
             with open(hyp_zh_file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(hyp_zh_lines) + '\n')
             print("Computing CER for Chinese part...")
-            cer_result = compute_wer(ref_zh_file, hyp_zh_file)
+            cer_result = compute_wer(ref_zh_file, hyp_zh_file, tochar=True)
 
             # WER
             ref_en_file = "tmp_ref_en.txt"
@@ -183,7 +183,8 @@ class Evaluator:
 
             strip_all_punct(ref_norm_file)
             strip_all_punct(hyp_norm_file)
-            result = compute_wer(ref_norm_file, hyp_norm_file)
+            tochar = (language == "zh")
+            result = compute_wer(ref_norm_file, hyp_norm_file, tochar=tochar)
             os.remove(ref_norm_file)
             os.remove(hyp_norm_file)
             return result
