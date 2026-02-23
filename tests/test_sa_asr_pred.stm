@@ -1,8 +1,8 @@
 session1 1 spk1 0.00 2.00 hello world
 session1 1 spk2 2.00 4.00 how are you
 session1 1 spk1 4.00 5.00 fine thank you
-session1 1 spk2 5.00 7.00 see you soon
+session1 1 spk1 5.00 7.00 see you soon
 session1 1 spk1 7.00 8.00 FINE, THANK YOU!
-session1 1 spk2 8.00 9.00 How are you?
+session1 1 spk1 8.00 9.00 How are you?
 session1 1 spk1 9.00 10.00 Hello,   WORLD
 session1 1 spk2 10.00 12.00 see   you   LATER.

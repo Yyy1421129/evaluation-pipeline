@@ -2,6 +2,7 @@ import os
 from preprocess import Preprocessor
 from tasks.asr_wer import compute_wer
 from clean_marks import strip_all_punct
+from text_normalizer import normalize_text
 import re
 import unicodedata
 
@@ -338,27 +339,45 @@ class Evaluator:
             hyp_stm = data["hyp_file"]
             ref_norm_stm = "tmp_ref_sa_asr_norm.stm"
             hyp_norm_stm = "tmp_hyp_sa_asr_norm.stm"
+            collar = data.get("collar", 0.5)
 
             with open(ref_stm, 'r', encoding='utf-8') as fin, open(ref_norm_stm, 'w', encoding='utf-8') as fout:
                 for line in fin:
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
-                        norm_trans = self.preprocessor.normalize(parts[5])
+                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True)
                         parts[5] = norm_trans
+                        parts[3] = str(float(parts[3]))
+                        parts[4] = str(float(parts[4]))
                         fout.write(' '.join(parts) + '\n')
             with open(hyp_stm, 'r', encoding='utf-8') as fin, open(hyp_norm_stm, 'w', encoding='utf-8') as fout:
                 for line in fin:
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
-                        norm_trans = self.preprocessor.normalize(parts[5])
+                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True)
                         parts[5] = norm_trans
+                        parts[3] = str(float(parts[3]))
+                        parts[4] = str(float(parts[4]))
                         fout.write(' '.join(parts) + '\n')
 
             ref = meeteval.io.load(ref_norm_stm)
             hyp = meeteval.io.load(hyp_norm_stm)
-            result = meeteval.wer.cpwer(ref, hyp)
-            avg = meeteval.wer.combine_error_rates(result.values())
-            print(f"[SA-ASR] cpWER: {avg.error_rate:.4f} (errors: {avg.errors}, length: {avg.length})")
+
+            print(f"\n[SA-ASR] Evaluation Results (collar={collar}s):")
+            print("=" * 60)
+
+            result_cpwer = meeteval.wer.cpwer(ref, hyp)
+            avg_cpwer = meeteval.wer.combine_error_rates(result_cpwer.values())
+            print(f"cpWER: {avg_cpwer.error_rate:.4f} (errors: {avg_cpwer.errors}, length: {avg_cpwer.length})")
+
+            result_der = meeteval.der.dscore(ref, hyp, collar=collar)
+            for session, der in result_der.items():
+                print(f"DER for {session}: {float(der.error_rate):.4f} "
+                    f"(missed: {float(der.missed_speaker_time):.4f}, "
+                    f"fa: {float(der.falarm_speaker_time):.4f}, "
+                    f"ser: {float(der.speaker_error_time):.4f})")
+
+            print("=" * 60)
 
             os.remove(ref_norm_stm)
             os.remove(hyp_norm_stm)

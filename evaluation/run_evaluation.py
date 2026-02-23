@@ -48,6 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--ser_mapping", type=str, help="SER mapping dict, e.g. '{\"neu\":0,\"hap\":1,\"ang\":2,\"sad\":3}'")
     parser.add_argument("--gr_mapping", type=str, help="GR mapping dict, e.g. '{\"man\":0,\"woman\":1}'")
     parser.add_argument("--task", type=str, default="", help="Task name (sd or sa-asr for special format)")
+    parser.add_argument("--collar", type=float, default=0.5, help="Collar value for SA-ASR evaluation (default: 0.5)")
 
     args = parser.parse_args()
 
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     language = args.language
     ser_mapping = None
     task = args.task.lower()
+    collar = args.collar
     if args.ser_mapping:
         import ast
         try:
@@ -83,7 +85,8 @@ if __name__ == "__main__":
         print(f"\n=== Evaluating Task: {task.upper()} (special input format) ===")
         data = {
             "ref_file": gt_json,
-            "hyp_file": pred_txt
+            "hyp_file": pred_txt,
+            "collar": collar
         }
         evaluator.run(task_name, data, language)
     else:
