@@ -187,9 +187,9 @@ SPEAKER session1 1 5.00 2.00 <NA> <NA> spk2 <NA> <NA>
 
 <details>
 
-<summary>SA-ASR part(Examples): Matrix: meeteval cpWER</summary>
+<summary>SA-ASR part(Examples): Matrix: meeteval cpWER DER</summary>
 
-python run_evaluation.py <gt_stm> <pred_stm> —task sa-asr  
+python run_evaluation.py <gt_stm> <pred_stm> —task sa-asr —collar 0.1
 Pay attention to the different input format: .stm
 
 ```json
