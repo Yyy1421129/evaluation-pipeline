@@ -286,6 +286,7 @@ class Evaluator:
         elif task_name == "slu_eval":
             import subprocess
             hyp_processed = "tmp_hyp_slu_processed.txt"
+            ref_processed = "tmp_ref_slu_processed.txt"
             prompt_jsonl = data.get("prompt_jsonl")
             subprocess.run([
                 "python", "process_prediction.py",
@@ -293,8 +294,14 @@ class Evaluator:
                 data["hyp_file"],
                 hyp_processed
             ])
+            subprocess.run([
+                "python", "process_prediction.py",
+                prompt_jsonl,
+                data["ref_file"],
+                ref_processed
+            ])
             ref_answers = {}
-            with open(data["ref_file"], 'r', encoding='utf-8') as f:
+            with open(ref_processed, 'r', encoding='utf-8') as f:
                 for line in f:
                     parts = line.strip().split('\t', 1)
                     if len(parts) == 2:
@@ -320,6 +327,7 @@ class Evaluator:
             acc = correct / total
             print(f"[SLU] Accuracy: {acc:.4f} ({correct}/{total})")
             os.remove(hyp_processed)
+            os.remove(ref_processed)
             return acc
         elif task_name == "sd_eval":
             ref_rttm = data["ref_file"]
