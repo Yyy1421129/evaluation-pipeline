@@ -52,7 +52,7 @@ For SD tasks, input format should be .rttm. For SA-ASR tasks, input format shoul
 
 <summary>ASR part(Examples): Matrix: wenet wer/cer mer</summary>
 
-python run_evaluation.py <gt_json> <pred_txt> —language zh(Optional)
+python evaluation/run_evaluation.py <gt_json> <pred_txt> —language zh(Optional)
 
 ```json
 {
@@ -81,7 +81,7 @@ Returns: MER(mixture error rate) WER CER (Calculate separately in Chinese and En
 
 <summary>SER part(Examples): Matrix: acc</summary>
 
-python run_evaluation.py <gt_json> <pred_txt> —ser_mapping {}(Optional)  
+python evaluation/run_evaluation.py <gt_json> <pred_txt> —ser_mapping {}(Optional)  
 Default ser_mapping : {"neu": 0, "hap": 1, "ang": 2, "sad": 3} (IEMOCAP)  
 
 ```json
@@ -100,7 +100,7 @@ Default ser_mapping : {"neu": 0, "hap": 1, "ang": 2, "sad": 3} (IEMOCAP)
 
 <summary>GR part(Examples): Matrix: acc</summary>
 
-python run_evaluation.py <gt_json> <pred_txt> —gr_mapping {}(Optional)  
+python evaluation/run_evaluation.py <gt_json> <pred_txt> —gr_mapping {}(Optional)  
 Default gr_mapping : {"man": 0, "woman": 1}
 
 ```json
@@ -118,7 +118,7 @@ Default gr_mapping : {"man": 0, "woman": 1}
 
 <summary>S2TT part(Examples): Matrix: sacrebleu BLEU CHRF</summary>
 
-python run_evaluation.py <gt_json> <pred_txt> —language zh(Optional)  
+python evaluation/run_evaluation.py <gt_json> <pred_txt> —language zh(Optional)  
 Parameter language: the language of labels and prediction results
 
 ```json
@@ -136,7 +136,7 @@ Parameter language: the language of labels and prediction results
 
 <summary>SLU part(Examples): Matrix: acc</summary>
 
-python run_evaluation.py <gt_json> <pred_txt>  
+python evaluation/run_evaluation.py <gt_json> <pred_txt>  
 Parameter language: the language of labels and prediction results
 
 ```json
@@ -173,7 +173,7 @@ pause_perception_e2222222-cccc-dddd-eeee-987654321fed	running
 
 <summary>SD part(Examples): Matrix: meeteval DER</summary>
 
-python run_evaluation.py <gt_rttm> <pred_rttm> —task sd  
+python evaluation/run_evaluation.py <gt_rttm> <pred_rttm> —task sd  
 Pay attention to the different input format: .rttm
 
 ```json
@@ -187,9 +187,9 @@ SPEAKER session1 1 5.00 2.00 <NA> <NA> spk2 <NA> <NA>
 
 <details>
 
-<summary>SA-ASR part(Examples): Matrix: meeteval cpWER</summary>
+<summary>SA-ASR part(Examples): Matrix: meeteval cpWER DER</summary>
 
-python run_evaluation.py <gt_stm> <pred_stm> —task sa-asr  
+python evaluation/run_evaluation.py <gt_stm> <pred_stm> —task sa-asr —collar 0.1
 Pay attention to the different input format: .stm
 
 ```json
