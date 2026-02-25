@@ -16,6 +16,13 @@ def _strip_punct(text):
         if not (unicodedata.category(ch).startswith('P') and ch not in keep)
     )
 
+def _strip_punct_all(text):
+    keep = set()
+    return ''.join(
+        ch for ch in text
+        if not (unicodedata.category(ch).startswith('P') and ch not in keep)
+    )
+
 def calc_rate(result_dict):
     n = result_dict['all']
     s = result_dict['sub']
@@ -62,7 +69,10 @@ class Evaluator:
         self.gr_mapping = gr_mapping or {"man": 0, "woman": 1}
 
     def _normalize_label(self, label):
-        label = label.strip().lower()
+
+        label = label.strip()
+        label = _strip_punct_all(label)
+        label = label.lower()
         synonyms = {
             # 情感
             "happy": "hap",
