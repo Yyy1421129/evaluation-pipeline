@@ -363,7 +363,7 @@ class Evaluator:
                 for line in fin:
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
-                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True)
+                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True, language=language)
                         parts[5] = norm_trans
                         parts[3] = str(float(parts[3]))
                         parts[4] = str(float(parts[4]))
@@ -372,7 +372,7 @@ class Evaluator:
                 for line in fin:
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
-                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True)
+                        norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True, language=language)
                         parts[5] = norm_trans
                         parts[3] = str(float(parts[3]))
                         parts[4] = str(float(parts[4]))

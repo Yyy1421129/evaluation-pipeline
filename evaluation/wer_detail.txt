@@ -1,1 +1,0 @@
-Overall WER: 7.17%

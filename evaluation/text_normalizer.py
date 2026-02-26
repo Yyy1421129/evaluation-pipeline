@@ -33,7 +33,7 @@ def remove_all_puncts(text):
     return ''.join([c for c in text if c not in ALL_PUNCTS or c in SPACELIST])
 
 
-def normalize_text(text, case_sensitive=False, remove_tag=True):
+def normalize_text(text, case_sensitive=False, remove_tag=True, language="en"):
     if not text:
         return ""
     
@@ -46,5 +46,23 @@ def normalize_text(text, case_sensitive=False, remove_tag=True):
         text = text.upper()
     
     text = ' '.join(text.split())
+    if language == "zh":
+        tokens = []
+        buff = []
+        for ch in text:
+            if '\u4e00' <= ch <= '\u9fff':
+                if buff:
+                    tokens.append(''.join(buff))
+                    buff = []
+                tokens.append(ch)
+            elif ch.isspace():
+                if buff:
+                    tokens.append(''.join(buff))
+                    buff = []
+            else:
+                buff.append(ch)
+        if buff:
+            tokens.append(''.join(buff))
+        text = ' '.join(tokens)
     
     return text.strip()
