@@ -343,11 +343,12 @@ class Evaluator:
             ref_rttm = data["ref_file"]
             hyp_rttm = data["hyp_file"]
             import subprocess
+            collar = data.get("collar", 0.25)
             der_cmd = [
                 "meeteval-der", "dscore",
                 "-r", ref_rttm,
                 "-h", hyp_rttm,
-                "--collar", "0.25"
+                "--collar", str(collar)
             ]
             print(f"[SD] Running DER evaluation: {' '.join(der_cmd)}")
             subprocess.run(der_cmd)
