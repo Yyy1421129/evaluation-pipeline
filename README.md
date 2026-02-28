@@ -173,7 +173,7 @@ pause_perception_e2222222-cccc-dddd-eeee-987654321fed	running
 
 <summary>SD part(Examples): Matrix: meeteval DER</summary>
 
-python evaluation/run_evaluation.py <gt_rttm> <pred_rttm> --task sd  
+python evaluation/run_evaluation.py <gt_rttm> <pred_rttm> --task sd --collar 0.0
 Pay attention to the different input format: .rttm
 
 ```json
