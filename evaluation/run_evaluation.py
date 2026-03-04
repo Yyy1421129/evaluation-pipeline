@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import argparse
+from tqdm import tqdm
 
 from evaluator import Evaluator
 from config import CONFIG
@@ -19,25 +20,27 @@ TASK_MAP = {
 def load_gt_by_task(gt_json_path):
     task_dict = {}
     with open(gt_json_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            if not line.strip():
-                continue
-            item = json.loads(line)
-            task = item['task'].lower()
-            if task not in task_dict:
-                task_dict[task] = []
-            task_dict[task].append(item)
+        lines = f.readlines()
+    for line in tqdm(lines, desc="Loading GT data", unit="lines"):
+        if not line.strip():
+            continue
+        item = json.loads(line)
+        task = item['task'].lower()
+        if task not in task_dict:
+            task_dict[task] = []
+        task_dict[task].append(item)
     return task_dict
 
 def load_pred(pred_path):
     pred_dict = {}
     with open(pred_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            if not line.strip():
-                continue
-            parts = line.strip().split(None, 1)
-            if len(parts) == 2:
-                pred_dict[parts[0]] = parts[1]
+        lines = f.readlines()
+    for line in tqdm(lines, desc="Loading prediction data", unit="lines"):
+        if not line.strip():
+            continue
+        parts = line.strip().split(None, 1)
+        if len(parts) == 2:
+            pred_dict[parts[0]] = parts[1]
     return pred_dict
 
 if __name__ == "__main__":
@@ -92,7 +95,7 @@ if __name__ == "__main__":
     else:
         task_dict = load_gt_by_task(gt_json)
         pred_dict = load_pred(pred_txt)
-        for task, items in task_dict.items():
+        for task, items in tqdm(task_dict.items(), desc="Processing tasks", unit="task"):
             task_name = TASK_MAP.get(task, None)
             if not task_name:
                 print(f"[Warning] Unknown task type: {task}, skip.")
@@ -100,7 +103,7 @@ if __name__ == "__main__":
             print(f"\n=== Evaluating Task: {task.upper()} ===")
             ref_lines = []
             hyp_lines = []
-            for item in items:
+            for item in tqdm(items, desc=f"Processing {task.upper()} items", unit="item", leave=False):
                 key = item['key']
                 ref = item['target']
                 hyp = pred_dict.get(key, "")

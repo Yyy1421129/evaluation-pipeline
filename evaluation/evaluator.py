@@ -5,6 +5,7 @@ from clean_marks import strip_all_punct
 from text_normalizer import normalize_text
 import re
 import unicodedata
+from tqdm import tqdm
 
 def _is_chinese_char(ch):
     return '\u4e00' <= ch <= '\u9fff'
@@ -105,25 +106,27 @@ class Evaluator:
             proc1 = Preprocessor(lang='en')
             proc2 = Preprocessor(lang='zh')
             with open(data["ref_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        tokens = tokenize_codeswitch(text, proc1, proc2)
-                        ref_lines.append(f"{key}\t{' '.join(tokens)}")
-                        zh, en = split_tokens(tokens)
-                        ref_zh_lines.append(f"{key}\t{' '.join(zh)}")
-                        ref_en_lines.append(f"{key}\t{' '.join(en)}")
+                ref_file_lines = f.readlines()
             with open(data["hyp_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        tokens = tokenize_codeswitch(text, proc1, proc2)
-                        hyp_lines.append(f"{key}\t{' '.join(tokens)}")
-                        zh, en = split_tokens(tokens)
-                        hyp_zh_lines.append(f"{key}\t{' '.join(zh)}")
-                        hyp_en_lines.append(f"{key}\t{' '.join(en)}")
+                hyp_file_lines = f.readlines()
+            for line in tqdm(ref_file_lines, desc="Processing reference (code-switch)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    tokens = tokenize_codeswitch(text, proc1, proc2)
+                    ref_lines.append(f"{key}\t{' '.join(tokens)}")
+                    zh, en = split_tokens(tokens)
+                    ref_zh_lines.append(f"{key}\t{' '.join(zh)}")
+                    ref_en_lines.append(f"{key}\t{' '.join(en)}")
+            for line in tqdm(hyp_file_lines, desc="Processing hypothesis (code-switch)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    tokens = tokenize_codeswitch(text, proc1, proc2)
+                    hyp_lines.append(f"{key}\t{' '.join(tokens)}")
+                    zh, en = split_tokens(tokens)
+                    hyp_zh_lines.append(f"{key}\t{' '.join(zh)}")
+                    hyp_en_lines.append(f"{key}\t{' '.join(en)}")
             with open(ref_norm_file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(ref_lines) + '\n')
             with open(hyp_norm_file, 'w', encoding='utf-8') as f:
@@ -173,20 +176,22 @@ class Evaluator:
             hyp_norm_file = "tmp_hyp_norm.txt"
             ref_lines = []
             with open(data["ref_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        text_norm = self.preprocessor.normalize(text)
-                        ref_lines.append(f"{key}\t{text_norm}")
-            hyp_lines = []
+                ref_file_lines = f.readlines()
             with open(data["hyp_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        text_norm = self.preprocessor.normalize(text)
-                        hyp_lines.append(f"{key}\t{text_norm}")
+                hyp_file_lines = f.readlines()
+            for line in tqdm(ref_file_lines, desc="Normalizing reference", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    text_norm = self.preprocessor.normalize(text)
+                    ref_lines.append(f"{key}\t{text_norm}")
+            hyp_lines = []
+            for line in tqdm(hyp_file_lines, desc="Normalizing hypothesis", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    text_norm = self.preprocessor.normalize(text)
+                    hyp_lines.append(f"{key}\t{text_norm}")
             with open(ref_norm_file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(ref_lines) + '\n')
             with open(hyp_norm_file, 'w', encoding='utf-8') as f:
@@ -203,27 +208,29 @@ class Evaluator:
             ref_labels = []
             hyp_labels = []
             with open(data["ref_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, label = parts
-                        norm_label = self._normalize_label(label)
-                        ref_labels.append(norm_label)
+                ref_file_lines = f.readlines()
             with open(data["hyp_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, label = parts
-                        norm_label = self._normalize_label(label)
-                        mapped = None
-                        if norm_label.isdigit():
-                            for k, v in self.ser_mapping.items():
-                                if str(v) == norm_label:
-                                    mapped = k
-                                    break
-                        else:
-                            mapped = norm_label
-                        hyp_labels.append(mapped)
+                hyp_file_lines = f.readlines()
+            for line in tqdm(ref_file_lines, desc="Processing reference (SER)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, label = parts
+                    norm_label = self._normalize_label(label)
+                    ref_labels.append(norm_label)
+            for line in tqdm(hyp_file_lines, desc="Processing hypothesis (SER)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, label = parts
+                    norm_label = self._normalize_label(label)
+                    mapped = None
+                    if norm_label.isdigit():
+                        for k, v in self.ser_mapping.items():
+                            if str(v) == norm_label:
+                                mapped = k
+                                break
+                    else:
+                        mapped = norm_label
+                    hyp_labels.append(mapped)
             valid = [(r, h) for r, h in zip(ref_labels, hyp_labels) if r is not None and h is not None]
             if not valid:
                 print("[SER] No valid labels for accuracy calculation.")
@@ -236,27 +243,29 @@ class Evaluator:
             ref_labels = []
             hyp_labels = []
             with open(data["ref_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, label = parts
-                        norm_label = self._normalize_label(label)
-                        ref_labels.append(norm_label)
+                ref_file_lines = f.readlines()
             with open(data["hyp_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, label = parts
-                        norm_label = self._normalize_label(label)
-                        mapped = None
-                        if norm_label.isdigit():
-                            for k, v in self.gr_mapping.items():
-                                if str(v) == norm_label:
-                                    mapped = k
-                                    break
-                        else:
-                            mapped = norm_label
-                        hyp_labels.append(mapped)
+                hyp_file_lines = f.readlines()
+            for line in tqdm(ref_file_lines, desc="Processing reference (GR)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, label = parts
+                    norm_label = self._normalize_label(label)
+                    ref_labels.append(norm_label)
+            for line in tqdm(hyp_file_lines, desc="Processing hypothesis (GR)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, label = parts
+                    norm_label = self._normalize_label(label)
+                    mapped = None
+                    if norm_label.isdigit():
+                        for k, v in self.gr_mapping.items():
+                            if str(v) == norm_label:
+                                mapped = k
+                                break
+                    else:
+                        mapped = norm_label
+                    hyp_labels.append(mapped)
             valid = [(r, h) for r, h in zip(ref_labels, hyp_labels) if r is not None and h is not None]
             if not valid:
                 print("[GR] No valid labels for accuracy calculation.")
@@ -269,17 +278,19 @@ class Evaluator:
             ref_lines = []
             hyp_lines = []
             with open(data["ref_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        ref_lines.append(text)
+                ref_file_lines = f.readlines()
             with open(data["hyp_file"], 'r', encoding='utf-8') as f:
-                for line in f:
-                    parts = line.strip().split('\t', 1)
-                    if len(parts) == 2:
-                        key, text = parts
-                        hyp_lines.append(text)
+                hyp_file_lines = f.readlines()
+            for line in tqdm(ref_file_lines, desc="Processing reference (S2TT)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    ref_lines.append(text)
+            for line in tqdm(hyp_file_lines, desc="Processing hypothesis (S2TT)", unit="lines"):
+                parts = line.strip().split('\t', 1)
+                if len(parts) == 2:
+                    key, text = parts
+                    hyp_lines.append(text)
             ref_txt = "tmp_ref_s2tt_bleu.txt"
             hyp_txt = "tmp_hyp_s2tt_bleu.txt"
             with open(ref_txt, 'w', encoding='utf-8') as f:
@@ -360,8 +371,10 @@ class Evaluator:
             hyp_norm_stm = "tmp_hyp_sa_asr_norm.stm"
             collar = data.get("collar", 0.5)
 
-            with open(ref_stm, 'r', encoding='utf-8') as fin, open(ref_norm_stm, 'w', encoding='utf-8') as fout:
-                for line in fin:
+            with open(ref_stm, 'r', encoding='utf-8') as fin:
+                ref_lines = fin.readlines()
+            with open(ref_norm_stm, 'w', encoding='utf-8') as fout:
+                for line in tqdm(ref_lines, desc="Normalizing reference (SA-ASR)", unit="lines"):
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
                         norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True, language=language)
@@ -369,8 +382,10 @@ class Evaluator:
                         parts[3] = str(float(parts[3]))
                         parts[4] = str(float(parts[4]))
                         fout.write(' '.join(parts) + '\n')
-            with open(hyp_stm, 'r', encoding='utf-8') as fin, open(hyp_norm_stm, 'w', encoding='utf-8') as fout:
-                for line in fin:
+            with open(hyp_stm, 'r', encoding='utf-8') as fin:
+                hyp_lines = fin.readlines()
+            with open(hyp_norm_stm, 'w', encoding='utf-8') as fout:
+                for line in tqdm(hyp_lines, desc="Normalizing hypothesis (SA-ASR)", unit="lines"):
                     parts = line.strip().split(maxsplit=5)
                     if len(parts) == 6:
                         norm_trans = normalize_text(parts[5], case_sensitive=False, remove_tag=True, language=language)

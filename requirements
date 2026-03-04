@@ -5,3 +5,4 @@ scipy
 packaging
 kaldialign
 unicodedata2
+tqdm

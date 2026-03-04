@@ -42,6 +42,25 @@ For SD tasks, input format should be .rttm. For SA-ASR tasks, input format shoul
 - Support batch evaluation and summary statistics.
 - Modular design for easy extension to new tasks.
 
+## Environment Setup
+
+### Using Conda
+
+1. Create a new conda environment:
+```bash
+conda create -n eval_pipeline python=3.10
+```
+
+2. Activate the environment:
+```bash
+conda activate eval_pipeline
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements
+```
+
 ## Usage
 
 1. Place GT JSON and prediction files in the directory.
