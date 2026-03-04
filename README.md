@@ -67,6 +67,82 @@ pip install -r requirements
 2. Run the evaluation scripts for the desired task.
 3. Results will be output as summary tables and metrics.
 
+## Result Saving
+
+The evaluation system supports saving results to JSON files for further analysis.
+
+### Parameters
+
+- `--saved`: Whether to save results (default: `true`)
+  - `true`: Save results to JSON file
+  - `false`: Do not save results
+
+- `--save_dir`: Directory to save results (default: `results/`)
+  - Supports custom directory paths
+  - Directory will be created automatically if it does not exist
+
+### Example Commands
+
+```bash
+# Save results to default directory (results/)
+python evaluation/run_evaluation.py tests/test_asr_en.jsonl tests/test_asr_en.txt
+
+# Do not save results
+python evaluation/run_evaluation.py tests/test_asr_en.jsonl tests/test_asr_en.txt --saved false
+
+# Save to custom directory
+python evaluation/run_evaluation.py tests/test_asr_en.jsonl tests/test_asr_en.txt --save_dir ./my_results
+```
+
+### Output Format
+
+Results are saved as JSON files with the following naming convention:
+```
+{gt_basename}_{pred_basename}_{timestamp}.json
+```
+
+Example: `test_asr_en_test_asr_en_20260304_123456.json`
+
+### Result Structure
+
+```json
+{
+  "evaluation_time": "2026-03-04T12:34:56.789012",
+  "ground_truth": "tests/test_asr_en.jsonl",
+  "prediction": "tests/test_asr_en.txt",
+  "language": "en",
+  "tasks": {
+    "asr_wer": {
+      "task_type": "asr_wer",
+      "result": {
+        "all": 29,
+        "cor": 28,
+        "sub": 1,
+        "ins": 1,
+        "del": 0
+      },
+      "num_samples": 5,
+      "wer_percent": 6.9
+    }
+  }
+}
+```
+
+### Task-Specific Metrics
+
+Each task includes specific computed metrics in the saved results:
+
+| Task | Metrics |
+|------|---------|
+| ASR | `wer_percent` - Word Error Rate percentage |
+| ASR (Code-switch) | `mer_percent`, `wer_percent`, `cer_percent` |
+| SER | `accuracy_percent` - Accuracy percentage |
+| GR | `accuracy_percent` - Accuracy percentage |
+| SLU | `accuracy_percent` - Accuracy percentage |
+| S2TT | `bleu_score`, `chrf_score` - BLEU and chrF2 scores |
+| SD | `der_percent` - Diarization Error Rate percentage |
+| SA-ASR | `cpwer_percent`, `der_percent` - cpWER and DER percentages |
+
 <details>
 
 <summary>ASR part(Examples): Matrix: wenet wer/cer mer</summary>
@@ -273,6 +349,13 @@ elif task_name == "mytask_eval":
 In `run_evaluation.py`, add to `TASK_MAP`:
 ```python
 "mytask": "mytask_eval",
+```
+
+To support result saving for your new task, add handling in the `format_task_result` function:
+```python
+# MyTask: compute accuracy percentage
+elif task_name == "mytask_eval" and isinstance(result, (int, float)):
+    task_result["accuracy_percent"] = round(result * 100, 2)
 ```
 
 By following these steps, anyone can easily contribute a new task module to this evaluation framework.

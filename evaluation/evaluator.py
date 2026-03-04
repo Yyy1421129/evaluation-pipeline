@@ -75,7 +75,7 @@ class Evaluator:
         label = _strip_punct_all(label)
         label = label.lower()
         synonyms = {
-            # 情感
+            # Emotion
             "happy": "hap",
             "happiness": "hap",
             "neutral": "neu",
@@ -83,7 +83,7 @@ class Evaluator:
             "anger": "ang",
             "sadness": "sad",
             "sad": "sad",
-            # 性别
+            # Gender
             "male": "man",
             "m": "man",
             "man": "man",
@@ -297,13 +297,31 @@ class Evaluator:
                 f.write('\n'.join(ref_lines) + '\n')
             with open(hyp_txt, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(hyp_lines) + '\n')
-            import subprocess
-            bleu_cmd = ["python", "BLEU.py", ref_txt, hyp_txt, language]
-            print(f"[S2TT] Running BLEU/chrF2 evaluation: {' '.join(bleu_cmd)}")
-            subprocess.run(bleu_cmd)
-
+            from sacrebleu.metrics import BLEU, CHRF
+            
+            if language.lower() in ["zh", "ch", "chinese"]:
+                bleu = BLEU(tokenize='zh')
+                chrf = CHRF(word_order=2)
+            elif language.lower() in ["en", "english"]:
+                bleu = BLEU(tokenize='13a')
+                chrf = CHRF(word_order=2)
+            else:
+                bleu = BLEU(tokenize='none')
+                chrf = CHRF(word_order=2)
+            
+            score_bleu = bleu.corpus_score(hyp_lines, [ref_lines])
+            score_chrf = chrf.corpus_score(hyp_lines, [ref_lines])
+            
+            print(f"[S2TT] BLEU = {score_bleu.score:.2f}")
+            print(f"[S2TT] chrF2 = {score_chrf.score:.2f}")
+            
             os.remove(ref_txt)
             os.remove(hyp_txt)
+            
+            return {
+                "bleu": score_bleu.score,
+                "chrf": score_chrf.score
+            }
         elif task_name == "slu_eval":
             import subprocess
             hyp_processed = "tmp_hyp_slu_processed.txt"
@@ -351,18 +369,33 @@ class Evaluator:
             os.remove(ref_processed)
             return acc
         elif task_name == "sd_eval":
+            import meeteval
             ref_rttm = data["ref_file"]
             hyp_rttm = data["hyp_file"]
-            import subprocess
             collar = data.get("collar", 0.25)
-            der_cmd = [
-                "meeteval-der", "dscore",
-                "-r", ref_rttm,
-                "-h", hyp_rttm,
-                "--collar", str(collar)
-            ]
-            print(f"[SD] Running DER evaluation: {' '.join(der_cmd)}")
-            subprocess.run(der_cmd)
+            
+            print(f"[SD] Running DER evaluation with collar={collar}s")
+            ref = meeteval.io.load(ref_rttm)
+            hyp = meeteval.io.load(hyp_rttm)
+            result_der = meeteval.der.dscore(ref, hyp, collar=collar)
+            
+            total_error_rate = 0
+            total_sessions = 0
+            for session, der in result_der.items():
+                print(f"DER for {session}: {float(der.error_rate):.4f} "
+                    f"(missed: {float(der.missed_speaker_time):.4f}, "
+                    f"fa: {float(der.falarm_speaker_time):.4f}, "
+                    f"ser: {float(der.speaker_error_time):.4f})")
+                total_error_rate += float(der.error_rate)
+                total_sessions += 1
+            
+            avg_der = total_error_rate / total_sessions if total_sessions > 0 else 0
+            print(f"[SD] Average DER: {avg_der:.4f}")
+            
+            return {
+                "der": avg_der,
+                "num_sessions": total_sessions
+            }
         elif task_name == "sa_asr_eval":
             import meeteval
             ref_stm = data["ref_file"]
@@ -405,15 +438,27 @@ class Evaluator:
             print(f"cpWER: {avg_cpwer.error_rate:.4f} (errors: {avg_cpwer.errors}, length: {avg_cpwer.length})")
 
             result_der = meeteval.der.dscore(ref, hyp, collar=collar)
+            total_der = 0
+            num_sessions = 0
             for session, der in result_der.items():
                 print(f"DER for {session}: {float(der.error_rate):.4f} "
                     f"(missed: {float(der.missed_speaker_time):.4f}, "
                     f"fa: {float(der.falarm_speaker_time):.4f}, "
                     f"ser: {float(der.speaker_error_time):.4f})")
+                total_der += float(der.error_rate)
+                num_sessions += 1
+            
+            avg_der = total_der / num_sessions if num_sessions > 0 else 0
 
             print("=" * 60)
 
             os.remove(ref_norm_stm)
             os.remove(hyp_norm_stm)
+            
+            return {
+                "cpwer": float(avg_cpwer.error_rate),
+                "der": avg_der,
+                "num_sessions": num_sessions
+            }
         else:
             print(f"[Warning] Unknown task: {task_name}")
