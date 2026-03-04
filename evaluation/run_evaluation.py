@@ -17,6 +17,36 @@ TASK_MAP = {
     "sa-asr": "sa_asr_eval"
 }
 
+TASK_ALIASES = {
+    "asr": ["asr"],
+    "ser": ["ser", "emotion_recognition"],
+    "gr": ["gr", "gender_recognition"],
+    "s2tt": ["s2tt", "translation_ec"],
+    "slu": ["slu", "stress_based_reasoning"],
+    "sd": ["sd", "speaker_diarization"],
+    "sa-asr": ["sa-asr", "sa_asr"]
+}
+
+def get_task_name(task_input):
+    """
+    获取标准化的任务名称，支持大小写不敏感和别名
+    """
+    if not task_input:
+        return None
+    
+    task_lower = task_input.lower()
+    
+    # 直接匹配
+    if task_lower in TASK_MAP:
+        return TASK_MAP[task_lower]
+    
+    # 别名匹配
+    for canonical_name, aliases in TASK_ALIASES.items():
+        if task_lower in [alias.lower() for alias in aliases]:
+            return TASK_MAP[canonical_name]
+    
+    return None
+
 def load_gt_by_task(gt_json_path):
     task_dict = {}
     with open(gt_json_path, 'r', encoding='utf-8') as f:
@@ -80,8 +110,8 @@ if __name__ == "__main__":
 
     evaluator = Evaluator(CONFIG, language=language, ser_mapping=ser_mapping, gr_mapping=gr_mapping)
 
-    if task in ["sd", "sa-asr"]:
-        task_name = TASK_MAP.get(task, None)
+    if task in ["sd", "sa-asr", "sd_eval", "sa_asr_eval"]:
+        task_name = get_task_name(task)
         if not task_name:
             print(f"[Warning] Unknown task type: {task}, skip.")
             sys.exit(1)
@@ -96,7 +126,7 @@ if __name__ == "__main__":
         task_dict = load_gt_by_task(gt_json)
         pred_dict = load_pred(pred_txt)
         for task, items in tqdm(task_dict.items(), desc="Processing tasks", unit="task"):
-            task_name = TASK_MAP.get(task, None)
+            task_name = get_task_name(task)
             if not task_name:
                 print(f"[Warning] Unknown task type: {task}, skip.")
                 continue
