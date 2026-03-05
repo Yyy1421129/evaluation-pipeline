@@ -61,11 +61,9 @@ conda activate eval_pipeline
 pip install -r requirements
 ```
 
-## Usage
+## Evaluation Flowchart
 
-1. Place GT JSON and prediction files in the directory.
-2. Run the evaluation scripts for the desired task.
-3. Results will be output as summary tables and metrics.
+![Evaluation Flowchart](evaluation.png)
 
 ## Result Saving
 
@@ -127,21 +125,11 @@ Example: `test_asr_en_test_asr_en_20260304_123456.json`
   }
 }
 ```
+## Usage
 
-### Task-Specific Metrics
-
-Each task includes specific computed metrics in the saved results:
-
-| Task | Metrics |
-|------|---------|
-| ASR | `wer_percent` - Word Error Rate percentage |
-| ASR (Code-switch) | `mer_percent`, `wer_percent`, `cer_percent` |
-| SER | `accuracy_percent` - Accuracy percentage |
-| GR | `accuracy_percent` - Accuracy percentage |
-| SLU | `accuracy_percent` - Accuracy percentage |
-| S2TT | `bleu_score`, `chrf_score` - BLEU and chrF2 scores |
-| SD | `der_percent` - Diarization Error Rate percentage |
-| SA-ASR | `cpwer_percent`, `der_percent` - cpWER and DER percentages |
+1. Place GT JSON and prediction files in the directory.
+2. Run the evaluation scripts for the desired task.
+3. Results will be output as summary tables and metrics.
 
 <details>
 
