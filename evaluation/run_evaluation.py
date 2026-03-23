@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import argparse
+import ast
 from tqdm import tqdm
 from datetime import datetime
 
@@ -161,7 +162,6 @@ if __name__ == "__main__":
     saved = args.saved
     save_dir = args.save_dir
     if args.ser_mapping:
-        import ast
         try:
             ser_mapping = ast.literal_eval(args.ser_mapping)
         except Exception:
@@ -170,7 +170,6 @@ if __name__ == "__main__":
     
     gr_mapping = None
     if args.gr_mapping:
-        import ast
         try:
             gr_mapping = ast.literal_eval(args.gr_mapping)
         except Exception:

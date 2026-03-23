@@ -1,4 +1,4 @@
-# Evaluation System for Speech Tasks
+# Evaluation Pipeline for Speech Tasks
 
 ## Overview
 
@@ -15,7 +15,7 @@ This evaluation system is designed to assess multiple speech-related tasks, incl
 ## Input Format
 
 ### Ground Truth (GT) (ASR, SER, GR, S2TT, SLU)
-Input is a JSON file, each entry like:
+Input is a JSONL file, each entry like:
 ```json
 {
   "key": "6930-76324-0026",
@@ -56,7 +56,7 @@ conda create -n eval_pipeline python=3.10
 conda activate eval_pipeline
 ```
 
-3. Install dependencies:
+3. Install dependencies (from the root `requirements` file):
 ```bash
 pip install -r requirements
 ```
@@ -130,6 +130,30 @@ Example: `test_asr_en_test_asr_en_20260304_123456.json`
 1. Place GT JSON and prediction files in the directory.
 2. Run the evaluation scripts for the desired task.
 3. Results will be output as summary tables and metrics.
+
+## Smoke Tests (using `tests/`)
+
+Run the following commands to quickly verify major task paths:
+
+```bash
+# ASR (English / Chinese / code-switch)
+python evaluation/run_evaluation.py tests/test_asr_en.jsonl tests/test_asr_en.txt --language en --saved false
+python evaluation/run_evaluation.py tests/test_asr_zh.jsonl tests/test_asr_zh.txt --language zh --saved false
+python evaluation/run_evaluation.py tests/test_asr_cs.jsonl tests/test_asr_cs.txt --language cs --saved false
+
+# Classification-style tasks
+python evaluation/run_evaluation.py tests/test_ser.jsonl tests/test_ser.txt --saved false
+python evaluation/run_evaluation.py tests/test_gr.jsonl tests/test_gr.txt --saved false
+python evaluation/run_evaluation.py tests/test_slu.jsonl tests/test_slu.txt --saved false
+
+# S2TT
+python evaluation/run_evaluation.py tests/test_s2tt_en.jsonl tests/test_s2tt_en.txt --language en --saved false
+python evaluation/run_evaluation.py tests/test_s2tt_zh.jsonl tests/test_s2tt_zh.txt --language zh --saved false
+
+# SD / SA-ASR (special formats)
+python evaluation/run_evaluation.py tests/test_sd_ref.rttm tests/test_sd_pred.rttm --task sd --collar 0.0 --saved false
+python evaluation/run_evaluation.py tests/test_sa_asr_ref.stm tests/test_sa_asr_pred.stm --task sa-asr --collar 0.1 --language en --saved false
+```
 
 <details>
 

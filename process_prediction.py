@@ -11,9 +11,7 @@ process_prediction.py
 """
 
 import json
-import os
 import re
-import sys
 import argparse
 
 # -------------------- 参数配置 --------------------

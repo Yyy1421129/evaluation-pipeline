@@ -3,7 +3,6 @@ from preprocess import Preprocessor
 from tasks.asr_wer import compute_wer
 from clean_marks import strip_all_punct
 from text_normalizer import normalize_text
-import re
 import unicodedata
 from tqdm import tqdm
 
